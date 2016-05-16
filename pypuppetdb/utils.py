@@ -40,9 +40,26 @@ def json_to_datetime(date):
     :returns: A timezone aware datetime object.
     :rtype: :class:`datetime.datetime`
     """
-    return datetime.datetime.strptime(date, '%Y-%m-%dT%H:%M:%S.%fZ').replace(
-        tzinfo=UTC())
+    def validate_date(d):
+      try:
+        datetime.datetime.strptime(d, '%Y-%m-%dT%H:%M:%S.%f+00:00')
+        return "Type-nonutc"
+      except ValueError:
+        try:
+          datetime.datetime.strptime(d, '%Y-%m-%dT%H:%M:%S.%fZ')
+          return "Type-UTC"
+        except ValueError:
+          return "failed"
 
+    newdate= validate_date(date)
+    format = '%Y-%m-%dT%H:%M:%S.%fZ'
+    if newdate == "Type-nonutc":
+      today = datetime.datetime.strptime(date, '%Y-%m-%dT%H:%M:%S.%f+00:00')
+      date2 =  today.strftime(format)
+    elif newdate == "Type-UTC":
+      date2 = date
+    return datetime.datetime.strptime(date2, '%Y-%m-%dT%H:%M:%S.%fZ').replace(
+        tzinfo=UTC())
 
 def versioncmp(v1, v2):
     """Compares two objects, x and y, and returns an integer according to the
